@@ -1,0 +1,35 @@
+
+buildscript {
+    repositories {
+        jcenter{ url "http://jcenter.bintray.com/"}
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        maven {
+            url "http://repo1.maven.org/maven2"
+        }
+        maven { url 'https://maven.fabric.io/repo' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.0-rc1'
+        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter{ url "http://jcenter.bintray.com/"}
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
+        maven {
+            url "http://repo1.maven.org/maven2"
+        }
+        maven { url 'https://maven.fabric.io/repo' }
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
