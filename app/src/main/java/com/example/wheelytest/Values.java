@@ -1,6 +1,11 @@
 package com.example.wheelytest;
 
-public class Values {
-    public static final String USERNAME_KEY = "username";
-    public static final String PASS_KEY = "password";
+public interface Values {
+    String USERNAME_KEY = "username";
+    String PASS_KEY = "password";
+    double START_LAT = 55.751244;
+    double START_LON = 37.618423;
+    String PREFS_TAG = "PREFS_TAG";
+    String LOGIN_TAG = "LOGIN_TAG";
+    String PASS_TAG = "PASS_TAG";
 }
