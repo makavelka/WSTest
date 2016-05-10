@@ -13,8 +13,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.widget.Toast;
 
+import com.example.wheelytest.model.GeoData;
 import com.example.wheelytest.model.LatLng;
 import com.example.wheelytest.model.db.LocationsDbDataSource;
+import com.example.wheelytest.utils.GsonUtils;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
@@ -22,15 +24,22 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 public class LocationService extends Service {
+
+    @Inject GsonUtils mGsonUtils;
 
     private LocationManager mLocationManager;
     private LocationsDbDataSource mDataSource;
     private WebSocket mWebSocket;
     private boolean isConnected = false;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -47,6 +56,7 @@ public class LocationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        App.getComponent().inject(this);
         initWebSocket();
         mDataSource = new LocationsDbDataSource(this);
         mDataSource.open();
@@ -78,7 +88,7 @@ public class LocationService extends Service {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             mDataSource.createGeoData(lat, lon, false);
             if (isConnected) {
-                mWebSocket.sendText(GsonUtils.toJson(latLng));
+                mWebSocket.sendText(mGsonUtils.toJson(latLng));
             }
         }
     };
@@ -103,7 +113,11 @@ public class LocationService extends Service {
             Criteria criteria = new Criteria();
             String bestProvider = mLocationManager.getBestProvider(criteria, false);
             android.location.Location location = mLocationManager.getLastKnownLocation(bestProvider);
-            mWebSocket.sendText(GsonUtils.toJson(new LatLng(35.4552, 38.52252)));
+            if (location != null) {
+                mWebSocket.sendText(mGsonUtils.toJson(new LatLng(location.getLatitude(), location.getLongitude())));
+            } else {
+                mWebSocket.sendText(mGsonUtils.toJson(new LatLng(Values.START_LAT, Values.START_LON)));
+            }
         }
 
         @Override
@@ -116,6 +130,8 @@ public class LocationService extends Service {
 
         @Override
         public void onTextMessage(WebSocket websocket, String text) throws Exception {
+            ArrayList<GeoData> arrayList = new ArrayList<>();
+            arrayList.addAll(Arrays.asList(mGsonUtils.fromJson(text, GeoData[].class)));
             Toast.makeText(LocationService.this, text, Toast.LENGTH_SHORT).show();
         }
     };
