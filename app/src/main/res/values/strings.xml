@@ -3,4 +3,10 @@
     <string name="login_hint">Имя пользователя</string>
     <string name="pass_hint">Пароль</string>
     <string name="auth">Авторизация</string>
+    <string name="pass_need_first_char_a">Пароль должен начинаться с a</string>
+    <string name="login_need_first_char_a">Логин должен начинаться с a</string>
+    <string name="permission_denied_location">Доступ к сервису GPS запрещен</string>
+    <string name="permission_denied_storage">Доступ к памяти запрещен. Необходим для загрузки карт</string>
+    <string name="disconnect">Отключиться</string>
+    <string name="service_is_up">Сервис запущен</string>
 </resources>
