@@ -1,4 +1,4 @@
 package com.example.wheelytest.presenter;
 
-public class MapPresenter {
+public interface MapPresenter extends Presenter{
 }
