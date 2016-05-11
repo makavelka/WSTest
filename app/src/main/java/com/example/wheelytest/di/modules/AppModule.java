@@ -1,8 +1,11 @@
 package com.example.wheelytest.di.modules;
 
 import android.content.Context;
+import android.location.LocationManager;
 
 import com.example.wheelytest.App;
+
+import org.greenrobot.eventbus.EventBus;
 
 import javax.inject.Singleton;
 
@@ -24,4 +27,14 @@ public class AppModule {
         return mApp;
     }
 
+    @Provides
+    @Singleton
+    EventBus provideEventBus() {
+        return EventBus.getDefault();
+    }
+
+    @Provides
+    LocationManager provideLocationManager() {
+       return (LocationManager) mApp.getSystemService(Context.LOCATION_SERVICE);
+    }
 }
