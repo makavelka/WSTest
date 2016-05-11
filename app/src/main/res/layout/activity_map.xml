@@ -3,10 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapActivity">
+    tools:context=".view.activity.MapActivity">
 
     <org.osmdroid.views.MapView
         android:id="@+id/map_mapView_mapActivity"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="40dp"
+        android:layout_alignParentBottom="true"
+        android:text="@string/disconnect"/>
 </RelativeLayout>
