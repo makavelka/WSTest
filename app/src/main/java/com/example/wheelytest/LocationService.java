@@ -30,7 +30,6 @@ import javax.inject.Inject;
 
 public class LocationService extends Service {
 
-    private final String mServiceName = ".LocationService";
     @Inject
     GsonUtils mGsonUtils;
     @Inject
@@ -67,7 +66,9 @@ public class LocationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         App.getComponent().inject(this);
-        mEventBus.register(this);
+        if (!mEventBus.isRegistered(this)) {
+            mEventBus.register(this);
+        }
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 5, l);
         start();

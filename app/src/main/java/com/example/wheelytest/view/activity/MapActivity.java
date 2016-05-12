@@ -60,10 +60,9 @@ public class MapActivity extends BaseActivity implements MarkersView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         App.getComponent().inject(this);
-        mEventBus.register(this);
         ButterKnife.bind(this);
-        initMap();
         requestPermission();
+        initMap();
         mPresenter.onCreate(savedInstanceState, this);
     }
 
@@ -154,7 +153,6 @@ public class MapActivity extends BaseActivity implements MarkersView {
                         return false;
                     }
                 }, MapActivity.this);
-        mOverlay.setFocusItemsOnTap(true);
         mMapView.getOverlays().add(mOverlay);
     }
 
@@ -174,6 +172,14 @@ public class MapActivity extends BaseActivity implements MarkersView {
     protected void onStop() {
         super.onStop();
         onStopEventBus();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!mEventBus.isRegistered(this)) {
+            mEventBus.register(this);
+        }
     }
 
     @Override
