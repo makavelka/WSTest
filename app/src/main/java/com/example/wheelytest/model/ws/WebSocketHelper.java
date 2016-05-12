@@ -3,11 +3,13 @@ package com.example.wheelytest.model.ws;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.support.v4.util.ArrayMap;
+import android.util.Log;
 
 import com.example.wheelytest.App;
 import com.example.wheelytest.Values;
 import com.example.wheelytest.model.GeoData;
 import com.example.wheelytest.model.LatLng;
+import com.example.wheelytest.model.NetworkHelper;
 import com.example.wheelytest.utils.GsonUtils;
 import com.example.wheelytest.utils.NetworkUtils;
 import com.example.wheelytest.utils.PrefsUtils;
@@ -16,12 +18,15 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
+import com.neovisionaries.ws.client.WebSocketState;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,15 +40,16 @@ public class WebSocketHelper {
     EventBus mEventBus;
     @Inject
     PrefsUtils mPrefs;
-    @Inject LocationManager mLocationManager;
+    @Inject
+    LocationManager mLocationManager;
     @Inject
     NetworkUtils mNetworkUtils;
 
     private WebSocket mWebSocket;
-    private boolean isConnected = false;
 
     public WebSocketHelper() {
         App.getComponent().inject(this);
+        mEventBus.register(this);
         initWebSocket();
     }
 
@@ -62,6 +68,7 @@ public class WebSocketHelper {
             params.put(Values.PASS_KEY, mPrefs.getPass());
             mWebSocket = new WebSocketFactory().createSocket(createURL(params));
             mWebSocket.addListener(mWebSocketAdapter);
+            mWebSocket.setPingPayloadGenerator(() -> new Date().toString().getBytes());
             mWebSocket.connectAsynchronously();
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,18 +76,28 @@ public class WebSocketHelper {
     }
 
     public void sendMessage(LatLng latLng) {
-        if (isConnected)
-        mWebSocket.sendText(mGsonUtils.toJson(latLng));
+        if (mWebSocket.isOpen())
+            mWebSocket.sendText(mGsonUtils.toJson(latLng));
     }
 
     public void disconnect() {
         mWebSocket.disconnect();
     }
 
+    public void reconnect() throws IOException{
+        mWebSocket = mWebSocket.recreate().connectAsynchronously();
+    }
+
+    @Subscribe
+    public void onMessageEvent(NetworkHelper helper) throws IOException {
+        if (helper.isInternetConnected()) {
+            reconnect();
+        }
+    }
+
     private WebSocketAdapter mWebSocketAdapter = new WebSocketAdapter() {
         @Override
         public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
-            isConnected = true;
             android.location.Location location = mNetworkUtils.getLastKnownLocation();
             if (location != null) {
                 mWebSocket.sendText(mGsonUtils.toJson(new LatLng(location.getLatitude(), location.getLongitude())));
@@ -91,10 +108,12 @@ public class WebSocketHelper {
 
         @Override
         public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
+            Log.d("WebSocket", "OnDisconnected");
         }
 
         @Override
         public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
+            Log.d("WebSocket", "OnError");
         }
 
         @Override
@@ -102,6 +121,20 @@ public class WebSocketHelper {
             ArrayList<GeoData> arrayList = new ArrayList<>();
             arrayList.addAll(Arrays.asList(mGsonUtils.fromJson(text, GeoData[].class)));
             mEventBus.post(arrayList);
+        }
+
+        @Override
+        public void onPingFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
+            super.onPingFrame(websocket, frame);
+        }
+
+        @Override
+        public void onStateChanged(WebSocket websocket, WebSocketState newState) throws Exception {
+            super.onStateChanged(websocket, newState);
+            if (newState.name().equals(WebSocketState.CLOSED)) {
+                reconnect();
+            }
+            Log.d("WebSocket", newState.name());
         }
     };
 }
