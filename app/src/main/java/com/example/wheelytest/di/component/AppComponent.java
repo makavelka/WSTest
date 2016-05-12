@@ -1,6 +1,7 @@
 package com.example.wheelytest.di.component;
 
 import com.example.wheelytest.LocationService;
+import com.example.wheelytest.NetworkReceiver;
 import com.example.wheelytest.di.modules.AppModule;
 import com.example.wheelytest.di.modules.UtilsModule;
 import com.example.wheelytest.di.modules.ViewModule;
@@ -26,4 +27,5 @@ public interface AppComponent {
     void inject(AuthActivity authActivity);
     void inject(NetworkUtils networkUtils);
     void inject(WebSocketHelper webSocketHelper);
+    void inject(NetworkReceiver networkReceiver);
 }
